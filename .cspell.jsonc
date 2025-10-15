@@ -2,6 +2,7 @@
   "words": [
     "ecdh",
     "libsecp256k1",
+    "rubygems",
     "secp256k1",
     "seckey"
   ],
