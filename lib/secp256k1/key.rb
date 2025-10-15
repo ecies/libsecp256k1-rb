@@ -31,7 +31,6 @@ module Secp256k1
           raise ArgumentError, "raw pubkey must be bytes" unless pubkey.instance_of?(String)
           @public_key = deserialize pubkey
         else
-          # raise ArgumentError, 'pubkey must be an internal object' unless pubkey.instance_of?(String)
           @public_key = pubkey
         end
       else
