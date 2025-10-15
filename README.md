@@ -1,54 +1,41 @@
-# ruby-bitcoin-secp256k1
+# libsecp256k1-rb
+
+A Ruby FFI binding for bitcoin's secp256k1 library, superseding [ruby-bitcoin-secp256k1](https://github.com/cryptape/ruby-bitcoin-secp256k1).
 
 ## Prerequisite
 
-In order to use this gem, [libsecp256k1](https://github.com/bitcoin/secp256k1) must be in place.
+In order to use this gem, bitcoins's [secp256k1](https://github.com/bitcoin-core/secp256k1) dynamic library (`libsecp256k1.dylib`) must be discoverable.
 
-### macOS
+### Install secp256k1
 
-```bash
-brew tap nervosnetwork/tap
-brew install libsecp256k1
-```
-
-### Ubuntu 18.04 or above
+Use Homebrew:
 
 ```bash
-sudo apt install libsecp256k1-dev
+brew install secp256k1
 ```
 
-### Ubuntu 16.04 or below
+Or build locally:
 
-```
-$ git clone https://github.com/bitcoin-core/secp256k1.git && cd secp256k1
-$ ./autogen.sh
-$ ./configure
-$ make
-$ sudo make install
-```
-
-Or if you have cloned the project, you could go to project root and run this install script:
-
-```
+```bash
 git submodule update --init --recursive
-./install_lib.sh
+./make.sh
+./test.sh
 ```
-
-The recovery and ecdh modules are optional. If your local installation of secp256k1 doesn't enable them then the gem would throw `LoadModuleError` when related functions are invoked.
 
 ## Install
 
+```bash
+gem i libsecp256k1
 ```
-gem i bitcoin-secp256k1
-```
 
-Then `require 'secp256k1'` (without `bitcoin-` prefix) in your source code.
+Then `require "secp256k1"` in your source code.
 
-## Usage
+You need to set `C_INCLUDE_PATH` and `LD_LIBRARY_PATH` (or `SECP256K1_LIB_PATH`) environment variables, see [test.sh](./test.sh) for usage.
 
-Check [test](test) for examples.
+## Examples
+
+Check [test](./tests/) for examples.
 
 ## LICENSE
 
-[MIT License](LICENSE)
-
+[MIT License](./LICENSE)

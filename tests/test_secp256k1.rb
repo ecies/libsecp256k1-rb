@@ -1,14 +1,11 @@
-# -*- encoding : ascii-8bit -*-
+require "minitest/autorun"
+require "secp256k1"
 
-$:.unshift File.expand_path('../../lib', __FILE__)
-
-require 'minitest/autorun'
-require 'secp256k1'
-
-require 'json'
+require "json"
 
 class MyECDSA < Secp256k1::BaseKey
-  include Secp256k1::Utils, Secp256k1::ECDSA
+  include Secp256k1::ECDSA
+  include Secp256k1::Utils
 
   def initialize
     super(nil, Secp256k1::ALL_FLAGS)
@@ -18,14 +15,52 @@ end
 class Secp256k1Test < Minitest::Test
   include Secp256k1
 
+  def test_mul
+    sk = PrivateKey.new
+    peer_sk = PrivateKey.new
+    peer_pk = peer_sk.pubkey
+    original_serialized = peer_pk.serialize
+    # serialize method is private
+    shared_secret = sk.tweak_mul(Utils.decode_hex(peer_sk.send(:serialize)))
+    shared_sk = PrivateKey.new(privkey: shared_secret, raw: true)
+    shared_point = peer_pk.tweak_mul(Utils.decode_hex(sk.send(:serialize)))
+    reciprocal = sk.pubkey.tweak_mul(Utils.decode_hex(peer_sk.send(:serialize)))
+
+    assert_instance_of PrivateKey, shared_sk
+    assert_instance_of PublicKey, shared_point
+    assert_equal shared_sk.pubkey.serialize, shared_point.serialize
+    assert_equal shared_point.serialize, reciprocal.serialize
+    assert_equal original_serialized, peer_pk.serialize
+  end
+
+  def test_tweak_requires_32_bytes
+    pk = PrivateKey.new
+
+    assert_raises(ArgumentError) { pk.pubkey.tweak_add("short") }
+    assert_raises(ArgumentError) { pk.tweak_mul("short") }
+  end
+
+  def test_ecdh
+    skip unless C.module_ecdh_enabled?
+
+    sk = PrivateKey.new
+    peer = PrivateKey.new
+
+    shared_a = sk.pubkey.ecdh(Utils.decode_hex(peer.send(:serialize)))
+    shared_b = peer.pubkey.ecdh(Utils.decode_hex(sk.send(:serialize)))
+
+    assert_equal 32, shared_a.bytesize
+    assert_equal shared_a, shared_b
+  end
+
   def test_ecdsa
-    vec = ecdsa_sig['vectors']
+    vec = ecdsa_sig["vectors"]
     pk = PrivateKey.new
 
     vec.each do |item|
-      seckey = Utils.decode_hex item['privkey']
-      msg32 = Utils.decode_hex item['msg']
-      sig = Utils.decode_hex(item['sig'])[0...-1]
+      seckey = Utils.decode_hex item["privkey"]
+      msg32 = Utils.decode_hex item["msg"]
+      sig = Utils.decode_hex(item["sig"])[0...-1]
 
       pk.set_raw_privkey seckey
 
@@ -39,27 +74,27 @@ class Secp256k1Test < Minitest::Test
 
   def test_ecdsa_verity
     pk = PrivateKey.new
-    raw_sig = pk.ecdsa_sign 'test'
-    assert pk.pubkey.ecdsa_verify('test', raw_sig)
-    assert !pk.pubkey.ecdsa_verify('testtest', raw_sig)
+    raw_sig = pk.ecdsa_sign "test"
+    assert pk.pubkey.ecdsa_verify("test", raw_sig)
+    assert !pk.pubkey.ecdsa_verify("testtest", raw_sig)
   end
 
   def test_ecdsa_compact
     pk = PrivateKey.new
-    raw_sig = pk.ecdsa_sign 'test'
-    assert_equal true, pk.pubkey.ecdsa_verify('test', raw_sig)
+    raw_sig = pk.ecdsa_sign "test"
+    assert_equal true, pk.pubkey.ecdsa_verify("test", raw_sig)
 
     compact = pk.ecdsa_serialize_compact raw_sig
     assert_equal 64, compact.size
 
     sig_raw = pk.ecdsa_deserialize_compact compact
     assert_equal compact, pk.ecdsa_serialize_compact(sig_raw)
-    assert_equal true, pk.pubkey.ecdsa_verify('test', sig_raw)
+    assert_equal true, pk.pubkey.ecdsa_verify("test", sig_raw)
   end
 
   def test_ecdsa_normalize
     pk = PrivateKey.new
-    raw_sig = pk.ecdsa_sign 'hi'
+    raw_sig = pk.ecdsa_sign "hi"
 
     had_to_normalize, normsig = pk.ecdsa_signature_normalize raw_sig
     assert_equal false, had_to_normalize
@@ -70,7 +105,7 @@ class Secp256k1Test < Minitest::Test
     assert_equal false, had_to_normalize
     assert_nil normsig
 
-    sig = "\xAA" + "\xFF"*31 + "\xAA" + "\xFF"*31
+    sig = "\xAA" + "\xFF" * 31 + "\xAA" + "\xFF" * 31
     raw_sig = pk.ecdsa_deserialize_compact sig
 
     normalized, normsig = pk.ecdsa_signature_normalize raw_sig
@@ -88,14 +123,14 @@ class Secp256k1Test < Minitest::Test
     pk = PrivateKey.new
     unrelated = MyECDSA.new
 
-    recsig = pk.ecdsa_sign_recoverable 'hello'
-    pubkey = unrelated.ecdsa_recover 'hello', recsig
+    recsig = pk.ecdsa_sign_recoverable "hello"
+    pubkey = unrelated.ecdsa_recover "hello", recsig
     pubser = PublicKey.new(pubkey: pubkey).serialize
     assert_equal pubser, pk.pubkey.serialize
 
     recsig_ser = unrelated.ecdsa_recoverable_serialize recsig
     recsig2 = unrelated.ecdsa_recoverable_deserialize(*recsig_ser)
-    pubkey2 = unrelated.ecdsa_recover 'hello', recsig2
+    pubkey2 = unrelated.ecdsa_recover "hello", recsig2
     pubser2 = PublicKey.new(pubkey: pubkey2).serialize
     assert_equal pubser, pubser2
 
@@ -106,7 +141,6 @@ class Secp256k1Test < Minitest::Test
   private
 
   def ecdsa_sig
-    @ecdsa_sig = JSON.parse File.read(File.expand_path('../fixtures/ecdsa_sig.json', __FILE__))
+    @ecdsa_sig = JSON.parse File.read(File.expand_path("../fixtures/ecdsa_sig.json", __FILE__))
   end
-
 end

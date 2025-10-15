@@ -1,25 +1,39 @@
 PATH
   remote: .
   specs:
-    bitcoin-secp256k1 (0.5.2)
-      ffi (>= 1.9.25)
+    libsecp256k1 (0.6.0)
+      ffi (>= 1.17.2)
 
 GEM
   remote: https://rubygems.org/
   specs:
-    ffi (1.11.1)
-    minitest (5.11.3)
-    rake (12.3.2)
-    yard (0.9.20)
+    ffi (1.17.2)
+    ffi (1.17.2-aarch64-linux-gnu)
+    ffi (1.17.2-aarch64-linux-musl)
+    ffi (1.17.2-arm-linux-gnu)
+    ffi (1.17.2-arm-linux-musl)
+    ffi (1.17.2-arm64-darwin)
+    ffi (1.17.2-x86-linux-gnu)
+    ffi (1.17.2-x86-linux-musl)
+    ffi (1.17.2-x86_64-darwin)
+    ffi (1.17.2-x86_64-linux-gnu)
+    ffi (1.17.2-x86_64-linux-musl)
 
 PLATFORMS
+  aarch64-linux-gnu
+  aarch64-linux-musl
+  arm-linux-gnu
+  arm-linux-musl
+  arm64-darwin
   ruby
+  x86-linux-gnu
+  x86-linux-musl
+  x86_64-darwin
+  x86_64-linux-gnu
+  x86_64-linux-musl
 
 DEPENDENCIES
-  bitcoin-secp256k1!
-  minitest (= 5.11.3)
-  rake (~> 12.3)
-  yard (= 0.9.20)
+  libsecp256k1!
 
 BUNDLED WITH
-   1.17.2
+   2.7.2
