@@ -36,3 +36,6 @@ jobs:
 
       - name: Run tests
         run: ./test.sh
+
+      - name: Build gem
+        run: gem build --output=release.gem

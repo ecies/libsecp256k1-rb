@@ -21,7 +21,15 @@ jobs:
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
-          bundler-cache: true
-          ruby-version: ruby
+          ruby-version: '3.4'
 
-      - uses: rubygems/release-gem@v1
+      - name: Install dependencies
+        run: bundle install
+
+      - name: Build gem
+        run: gem build --output=release.gem
+
+      - name: Publish gem
+        run: gem push release.gem
+        env:
+          GEM_HOST_API_KEY: ${{ secrets.RUBYGEMS_API_KEY }}
