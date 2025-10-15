@@ -1,0 +1,12 @@
+{
+  "words": [
+    "ecdh",
+    "libsecp256k1",
+    "secp256k1",
+    "seckey"
+  ],
+  "ignorePaths": [
+    ".gitignore",
+    "LICENSE"
+  ]
+}
