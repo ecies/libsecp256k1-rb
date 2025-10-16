@@ -8,10 +8,11 @@ In order to use this gem, bitcoins's [secp256k1](https://github.com/bitcoin-core
 
 ### Install secp256k1
 
-Use Homebrew:
+Use Homebrew on macOS or apt on Debian/Ubuntu:
 
 ```bash
 brew install secp256k1
+apt install libsecp256k1-dev gcc
 ```
 
 Or build locally:
